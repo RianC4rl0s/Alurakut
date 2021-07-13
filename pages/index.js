@@ -108,7 +108,7 @@ export default function Home() {
             <ul>
               {
                 //MAP transforma o array e devolve, o foreach cria as coisas
-                community.map((entity) => {
+                community.slice(0,6).map((entity) => {
                   return (
                     <li key={entity.id}>
 
@@ -129,7 +129,7 @@ export default function Home() {
             <ul>
               {
                 //MAP transforma o array e devolve, o foreach cria as coisas
-                favoritePeople.map((entity) => {
+                favoritePeople.slice(0,6).map((entity) => {
                   return (
                     <li key={entity}>
                       <a href={`/users/${entity}`} >
