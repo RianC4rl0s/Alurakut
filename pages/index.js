@@ -23,6 +23,30 @@ function ProfileSideBar(props) {
   )
 }
 
+function ProfileRelationsBox(props) {
+  return <ProfileRelationsBoxWrapper>
+    <h2 className="smallTitle"> {props.title} ({props.itens.length})  </h2>
+    <ul>
+      {/*
+        
+        followers.slice(0, 6).map((entity) => {
+          return (
+            <li key={entity}>
+
+             
+              <a href={`https://github.com/${entity.login}`} >
+              
+                <img src={`https://github.com/${entity.login}.png`}></img>
+                <span>{entity.login}</span>
+              </a>
+            </li>
+          )
+        }) 
+      */}
+    </ul>
+  </ProfileRelationsBoxWrapper>
+}
+
 export default function Home() {
 
 
@@ -32,12 +56,43 @@ export default function Home() {
   const [community, setCommunity] = React.useState(
     [{
       id: '223456853',
-      title: 'Eu odeio acrodar cedo',
+      title: 'Eu odeio acordar cedo',
       image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg',
       link: 'https://github.com/RianC4rl0s'
     }]
   )
+    const [followers,setSeguidores] = React.useState([])
+    //Não usar useEffect iria criar um loop infinito, que dependendo da api pode gerar problemas ou ban de ip
+    React.useEffect(function (){
+    fetch('https://api.github.com/users/RianC4rl0s/followers')
+    .then(function (serverReturn) {
+      return serverReturn.json()
+    })
+    .then(function (jsonPromise) {
+      setSeguidores(jsonPromise)
+    })
+    //esse segundo parametro com array vazio faz com que o useEffect só execute 1x
+    },[])
 
+  /*
+    //fetch retorn uma promessa
+  fetch('https://api.github.com/users/RianC4rl0s/followers')
+.then(function (serverReturn){
+    if(serverReturn.ok){
+        return serverReturn.json()
+    }
+    throw new Error('Error')
+})
+.then(function (serverReturn){
+    console.log(serverReturn)
+
+})
+.catch(function (erro){
+    console.log(erro)
+})
+  */
+
+  //O que sera renderizado
   return (
     <>
       <AlurakutMenu githubUser={user} />
@@ -64,7 +119,7 @@ export default function Home() {
               console.log(formData.get('image'))
 
               const newCommunity = {
-                id: new Date().toISOString,
+                id: new Date().toISOString(),
                 title: formData.get('title'),
                 image: formData.get('image'),
                 link: formData.get('link')
@@ -103,12 +158,15 @@ export default function Home() {
           </Box>
         </div>
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
+
+          <ProfileRelationsBox title="Seguidores" itens={followers}></ProfileRelationsBox>
+
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle"> Comunidades ({community.length})  </h2>
             <ul>
               {
                 //MAP transforma o array e devolve, o foreach cria as coisas
-                community.slice(0,6).map((entity) => {
+                community.slice(0, 6).map((entity) => {
                   return (
                     <li key={entity.id}>
 
@@ -129,7 +187,7 @@ export default function Home() {
             <ul>
               {
                 //MAP transforma o array e devolve, o foreach cria as coisas
-                favoritePeople.slice(0,6).map((entity) => {
+                favoritePeople.slice(0, 6).map((entity) => {
                   return (
                     <li key={entity}>
                       <a href={`/users/${entity}`} >
