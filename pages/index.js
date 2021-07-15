@@ -6,25 +6,9 @@ import InfinityScroll from '../src/components/infinityScroll'
 import ProfileRelationsBox from '../src/components/profileRelationsBox'
 import { ProfileRelationsBoxWrapper } from '../src/components/profileRelations'
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons'
+import ProfileSideBar from '../src/components/profileSidedBar'
 
 
-function ProfileSideBar(props) {
-  return (
-    <Box as="aside">
-      {/*pegando o valor do prop  */}
-      <img src={`https://www.github.com/${props.githubUser}.png`} style={{ borderRadius: '8px' }} />
-      <hr />
-      <p>
-        <a className="boxLink" href={`https://github.com/${props.githubUser}`}>
-          @{props.githubUser}
-        </a>
-      </p>
-      <hr />
-      <AlurakutProfileSidebarMenuDefault>
-      </AlurakutProfileSidebarMenuDefault>
-    </Box>
-  )
-}
 
 
 
@@ -35,16 +19,21 @@ export default function Home() {
   const favoritePeople = ['yuregsf', 'junior-ch-rc', 'peas', 'araujolucas3005', 'higorbreno']
 
   const [community, setCommunity] = React.useState(
-    [{
+    [
+      /*{
       id: '223456853',
       title: 'Eu odeio acordar cedo',
       image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg',
       link: 'https://github.com/RianC4rl0s'
-    }]
+    }
+  */
+ ]
   )
   const [followers, setSeguidores] = React.useState([])
   //Não usar useEffect iria criar um loop infinito, que dependendo da api pode gerar problemas ou ban de ip
   React.useEffect(function () {
+    //fetch de followers
+    //GET http protocol
     fetch('https://api.github.com/users/RianC4rl0s/followers')
       .then(function (serverReturn) {
         return serverReturn.json()
@@ -52,7 +41,35 @@ export default function Home() {
       .then(function (jsonPromise) {
         setSeguidores(jsonPromise)
       })
-    //esse segundo parametro com array vazio faz com que o useEffect só execute 1x
+
+    //fetch de comunidades
+    fetch('https://graphql.datocms.com/',{
+      method:'POST',
+      headers: {
+        'Authorization': 'efcb7f0f79864c2682894ccae319b2',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body : JSON.stringify({"query": `query {
+        allCommunities {
+          id
+          title
+          imageUrl
+          link
+          creatorSlug
+          #_status
+          #_firstPublishedAt
+        }
+      }` })
+       
+    })
+    .then((serverReturn)=> serverReturn.json())
+    .then((jsonPromise)=> {
+      const dowloadedCommunity = jsonPromise.data.allCommunities
+      setCommunity(dowloadedCommunity)
+      console.log(jsonPromise)
+    })
+    //esse segundo parametro  com array vazio faz com que o useEffect só execute 1x
   }, [])
 
   /*
@@ -101,16 +118,36 @@ export default function Home() {
               console.log(formData.get('image'))
 
               const newCommunity = {
-                id: new Date().toISOString(),
+                //id: new Date().toISOString(),
                 title: formData.get('title'),
-                image: formData.get('image'),
-                link: formData.get('link')
+                imageUrl: formData.get('image'),
+                link: formData.get('link'),
+                creatorSlug: user
               }
-              //Os 3 pontos é um spread, significa que ele pega o array e coloca valor nele 
-              const attCommunity = [...community, newCommunity]
-              setCommunity(attCommunity);
-              console.log(attCommunity)
 
+
+              //NOVA FORMA DE USAR O .then
+              fetch('/api/community',{
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json', 
+                },
+                body: JSON.stringify(newCommunity)
+              })
+              .then(async (response)=>{
+                const data = await response.json();
+                console.log(data.record)
+
+                const comu = data.record
+                //Os 3 pontos é um spread, significa que ele pega o array e coloca valor nele 
+              const attCommunity = [...community, comu]
+              setCommunity(attCommunity);
+              //console.log(attCommunity)
+              })
+              
+
+
+             
             }
             }>
               <div>
@@ -161,12 +198,12 @@ export default function Home() {
                 //MAP transforma o array e devolve, o foreach cria as coisas
                 community.slice(0, 6).map((entity) => {
                   return (
-                    <li key={entity.id}>
+                    <li key={entity.id }>
 
                       {/*<a href={`/users/${entity.title}`} key={entity.id}>*/}
                       <a href={entity.link} >
                         {/*<img src={`http://placehold.it/300x300`}></img>*/}
-                        <img src={entity.image}></img>
+                        <img src={entity.imageUrl}></img>
                         <span>{entity.title}</span>
                       </a>
                     </li>
@@ -182,7 +219,7 @@ export default function Home() {
                 //MAP transforma o array e devolve, o foreach cria as coisas
                 favoritePeople.slice(0, 6).map((entity) => {
                   return (
-                    <li key={entity.id}>
+                    <li key={entity.id }>
                       <a href={`/users/${entity}`} >
                         <img src={`https://github.com/${entity}.png`}></img>
                         <span>{entity}</span>
