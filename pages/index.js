@@ -2,8 +2,11 @@
 import React from 'react'
 import MainGrid from '../src/components/mainGrid'
 import Box from '../src/components/box'
+import InfinityScroll from '../src/components/infinityScroll'
+import ProfileRelationsBox from '../src/components/profileRelationsBox'
 import { ProfileRelationsBoxWrapper } from '../src/components/profileRelations'
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons'
+
 
 function ProfileSideBar(props) {
   return (
@@ -23,29 +26,7 @@ function ProfileSideBar(props) {
   )
 }
 
-function ProfileRelationsBox(props) {
-  return <ProfileRelationsBoxWrapper>
-    <h2 className="smallTitle"> {props.title} ({props.itens.length})  </h2>
-    <ul>
-      {/*
-        
-        followers.slice(0, 6).map((entity) => {
-          return (
-            <li key={entity}>
 
-             
-              <a href={`https://github.com/${entity.login}`} >
-              
-                <img src={`https://github.com/${entity.login}.png`}></img>
-                <span>{entity.login}</span>
-              </a>
-            </li>
-          )
-        }) 
-      */}
-    </ul>
-  </ProfileRelationsBoxWrapper>
-}
 
 export default function Home() {
 
@@ -61,18 +42,18 @@ export default function Home() {
       link: 'https://github.com/RianC4rl0s'
     }]
   )
-    const [followers,setSeguidores] = React.useState([])
-    //Não usar useEffect iria criar um loop infinito, que dependendo da api pode gerar problemas ou ban de ip
-    React.useEffect(function (){
+  const [followers, setSeguidores] = React.useState([])
+  //Não usar useEffect iria criar um loop infinito, que dependendo da api pode gerar problemas ou ban de ip
+  React.useEffect(function () {
     fetch('https://api.github.com/users/RianC4rl0s/followers')
-    .then(function (serverReturn) {
-      return serverReturn.json()
-    })
-    .then(function (jsonPromise) {
-      setSeguidores(jsonPromise)
-    })
+      .then(function (serverReturn) {
+        return serverReturn.json()
+      })
+      .then(function (jsonPromise) {
+        setSeguidores(jsonPromise)
+      })
     //esse segundo parametro com array vazio faz com que o useEffect só execute 1x
-    },[])
+  }, [])
 
   /*
     //fetch retorn uma promessa
@@ -109,6 +90,7 @@ export default function Home() {
             </h1>
             <OrkutNostalgicIconSet></OrkutNostalgicIconSet>
           </Box>
+          {/*FORMULARIO*/}
           <Box>
             <h2 className="subTitle">O que você deseja fazer?</h2>
             <form onSubmit={function handleCreateCommunity(e) {
@@ -156,6 +138,17 @@ export default function Home() {
               <button>Criar comunidade</button>
             </form>
           </Box>
+
+          {
+            /*
+
+
+          <InfinityScroll>
+
+          </InfinityScroll>
+          
+          */}
+
         </div>
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
 
@@ -189,7 +182,7 @@ export default function Home() {
                 //MAP transforma o array e devolve, o foreach cria as coisas
                 favoritePeople.slice(0, 6).map((entity) => {
                   return (
-                    <li key={entity}>
+                    <li key={entity.id}>
                       <a href={`/users/${entity}`} >
                         <img src={`https://github.com/${entity}.png`}></img>
                         <span>{entity}</span>
