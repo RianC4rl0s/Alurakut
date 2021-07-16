@@ -1,5 +1,8 @@
 
 import React from 'react'
+
+import jwt from 'jsonwebtoken'
+import nookies from 'nookies'
 import MainGrid from '../src/components/mainGrid'
 import Box from '../src/components/box'
 import InfinityScroll from '../src/components/infinityScroll'
@@ -9,13 +12,12 @@ import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet 
 import ProfileSideBar from '../src/components/profileSidedBar'
 
 
+export default function Home(props) {
 
+  //console.log(props.teste)
 
-
-export default function Home() {
-
-
-  const user = 'RianC4rl0s'
+  const user = props.githubUser
+  //const user = 'RianC4rl0s'
   const favoritePeople = ['yuregsf', 'junior-ch-rc', 'peas', 'araujolucas3005', 'higorbreno']
 
   const [community, setCommunity] = React.useState(
@@ -27,7 +29,7 @@ export default function Home() {
       link: 'https://github.com/RianC4rl0s'
     }
   */
- ]
+    ]
   )
   const [followers, setSeguidores] = React.useState([])
   //Não usar useEffect iria criar um loop infinito, que dependendo da api pode gerar problemas ou ban de ip
@@ -43,14 +45,15 @@ export default function Home() {
       })
 
     //fetch de comunidades
-    fetch('https://graphql.datocms.com/',{
-      method:'POST',
+    fetch('https://graphql.datocms.com/', {
+      method: 'POST',
       headers: {
         'Authorization': 'efcb7f0f79864c2682894ccae319b2',
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body : JSON.stringify({"query": `query {
+      body: JSON.stringify({
+        "query": `query {
         allCommunities {
           id
           title
@@ -61,14 +64,14 @@ export default function Home() {
           #_firstPublishedAt
         }
       }` })
-       
+
     })
-    .then((serverReturn)=> serverReturn.json())
-    .then((jsonPromise)=> {
-      const dowloadedCommunity = jsonPromise.data.allCommunities
-      setCommunity(dowloadedCommunity)
-      console.log(jsonPromise)
-    })
+      .then((serverReturn) => serverReturn.json())
+      .then((jsonPromise) => {
+        const dowloadedCommunity = jsonPromise.data.allCommunities
+        setCommunity(dowloadedCommunity)
+        console.log(jsonPromise)
+      })
     //esse segundo parametro  com array vazio faz com que o useEffect só execute 1x
   }, [])
 
@@ -127,27 +130,27 @@ export default function Home() {
 
 
               //NOVA FORMA DE USAR O .then
-              fetch('/api/community',{
+              fetch('/api/community', {
                 method: 'POST',
                 headers: {
-                  'Content-Type': 'application/json', 
+                  'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(newCommunity)
               })
-              .then(async (response)=>{
-                const data = await response.json();
-                console.log(data.record)
+                .then(async (response) => {
+                  const data = await response.json();
+                  console.log(data.record)
 
-                const comu = data.record
-                //Os 3 pontos é um spread, significa que ele pega o array e coloca valor nele 
-              const attCommunity = [...community, comu]
-              setCommunity(attCommunity);
-              //console.log(attCommunity)
-              })
-              
+                  const comu = data.record
+                  //Os 3 pontos é um spread, significa que ele pega o array e coloca valor nele 
+                  const attCommunity = [...community, comu]
+                  setCommunity(attCommunity);
+                  //console.log(attCommunity)
+                })
 
 
-             
+
+
             }
             }>
               <div>
@@ -176,15 +179,16 @@ export default function Home() {
             </form>
           </Box>
 
-          {
-            /*
 
 
-          <InfinityScroll>
+
+          <InfinityScroll name={user}>
 
           </InfinityScroll>
-          
-          */}
+
+
+
+
 
         </div>
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
@@ -198,7 +202,7 @@ export default function Home() {
                 //MAP transforma o array e devolve, o foreach cria as coisas
                 community.slice(0, 6).map((entity) => {
                   return (
-                    <li key={entity.id }>
+                    <li key={entity.id}>
 
                       {/*<a href={`/users/${entity.title}`} key={entity.id}>*/}
                       <a href={entity.link} >
@@ -219,7 +223,7 @@ export default function Home() {
                 //MAP transforma o array e devolve, o foreach cria as coisas
                 favoritePeople.slice(0, 6).map((entity) => {
                   return (
-                    <li key={entity.id }>
+                    <li key={entity.id}>
                       <a href={`/users/${entity}`} >
                         <img src={`https://github.com/${entity}.png`}></img>
                         <span>{entity}</span>
@@ -235,4 +239,53 @@ export default function Home() {
       </MainGrid>
     </>
   )
+}
+export async function getServerSideProps(context) {
+  const cookies = nookies.get(context)
+  const token = cookies.USER_TOKEN;
+  console.log('cookie token', jwt.decode(token))
+
+
+
+  const decodedToken = jwt.decode(token);
+  const githubUser = decodedToken?.githubUser;
+
+  if (!githubUser) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+
+
+  //verificando autenticaçao da api
+  //o retorno do fetch só é possivel por causa do await  
+  /*const { isAuthenticated } = await fetch('https://alurakut.vercel.app/api/auth', {
+    headers: {
+      Authorization: token
+    }
+  })
+    .then((resposta) => resposta.json())
+*/
+  //isso deveria autenticar o user, mas a API NAO FUNCIONA
+  /*console.log(isAuthenticated)
+  if (!isAuthenticated) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      }
+    }
+  }
+*/
+  //const { githubUser } = jwt.decode(token)
+  return {
+    props: {
+      githubUser,
+      teste: token
+
+    }, // will be passed to the page component as props
+  }
 }

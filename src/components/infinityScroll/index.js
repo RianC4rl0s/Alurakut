@@ -1,62 +1,100 @@
 import React from 'react'
+import { useEffect, useState } from 'react';
+import { createGlobalStyle } from 'styled-components'
+import Box from '../box'
 
+const FeedStyle = createGlobalStyle`
+  /*body {
+    font-family: sans-serif;
+  }
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }*/
+  
+  ul {
+    width: 300px;
+    height: 600px;
+    //overflow-y: scroll;
+    padding: 0;
+    background-color: #ddd;
+  }
+  li {
+    height: 150px;
+    padding: 15px;
+  }
+  li img {
+    --size: 75px;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+  }
+  li div {
+    padding: 15px;
+    background-color: #fff;
+    height: calc(100% - 30px);
+  }
+  #sentinela {
+    width: 100%;
+    height: 5px;
+    background-color: red;
+  }
+  #userIcon{
+      width: 40px;
+      height: auto;
+  }
+`;
 
-export default function InfinityScroll() {
+export default function InfinityScroll(props) {
+    const user = props.name
     const [followers, setFollowers] = React.useState([])
     const [currentPage, setCurrentPage] = React.useState(1)
-    React.useEffect(() => {
-        const per_page = 10
-        const URL_CONFIG = `?per_page=${per_page}&page=${currentPage}&order=DESC`
-        const URL = `https://api.github.com/users/peas/followers${URL_CONFIG}`
-        
-        
-      
+    useEffect(() => {
+        const perPage = 10;
+        const ENDPOINT = `https://api.github.com/users/${user}/followers`;
+        const URL = `${ENDPOINT}?per_page=${perPage}&page=${currentPage}&order=DESC`;
         fetch(URL)
-            .then(function (serverReturn) {
-                return serverReturn.json()
-            })
-            .then(function (jsonPromise) {
-                
-                setFollowers(jsonPromise)
-            })
-        //esse segundo parametro com array vazio faz com que o useEffect só execute 1x
-    }, [currentPage])
+            .then((response) => response.json())
+            .then((newFollowers) => setFollowers((prevFollowers) => [...prevFollowers, ...newFollowers]))
+    }, [currentPage]);
     console.log(followers)
-    React.useEffect(() => {
 
-    
+    useEffect(() => {
         const intersectionObserver = new IntersectionObserver(entries => {
-            console.log('olhou')
-
             if (entries.some(entry => entry.isIntersecting)) {
-                console.log(currentPage + 1)
-                setCurrentPage((currentPageInState) => currentPageInState + 1)
-
+                console.log('Sentinela appears!', currentPage + 1)
+                setCurrentPage((currentValue) => currentValue + 1);
             }
         })
-        intersectionObserver.observe(document.querySelector('#sentinela'))
-
-        return () => intersectionObserver.disconnect()
-
-    }, [])
+        intersectionObserver.observe(document.querySelector('#sentinela'));
+        return () => intersectionObserver.disconnect();
+    }, []);
 
     return (<>
 
 
-        <ul>
-            {
-                followers.map((entity, index) => {
-                    <li key={entity.login + index} >
+        <Box>
+            <ul>
+                {followers.map(follower => (
 
-                       
-                        <p>
-                            {entity.login}
-                        </p>
+                    <li key={follower.login}>
+                        <div>
+                            <hr />
+                            <div id="userIcon">
+                                <img src={`https://github.com/${follower.login}.png`} />
+
+                            </div>
+                            <p>
+                                github.com/<strong>{follower.login}</strong>
+                            </p>
+                        </div>
                     </li>
-                })
-            }
-            <li id='sentinela'></li>
-        </ul>
+                ))}
+                <li id="sentinela"></li>
+            </ul>
+
+        </Box>
 
     </>)
 }
