@@ -11,7 +11,7 @@ import { ProfileRelationsBoxWrapper } from '../src/components/profileRelations'
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons'
 import ProfileSideBar from '../src/components/profileSidedBar'
 
-
+import Tabs from '../src/components/tabs/Tabs'
 export default function Home(props) {
 
   //console.log(props.teste)
@@ -177,16 +177,23 @@ export default function Home(props) {
               </div>
               <button>Criar comunidade</button>
             </form>
+
+
           </Box>
 
+          <Box>
 
+            <Tabs>
+              <div label='Amigos'>
+                <InfinityScroll name={user} ></InfinityScroll>
+              </div>
 
+              <div label='Feed'>
+                Teste
+              </div>
+            </Tabs>
 
-          <InfinityScroll name={user}>
-
-          </InfinityScroll>
-
-
+          </Box>
 
 
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createGlobalStyle } from 'styled-components'
 
-
+//CODIGO DISPONIBILIZADO PELA ALURA CURSOS ONLINE
 const GlobalStyle = createGlobalStyle`
   body {
     font-family: sans-serif;
@@ -73,7 +73,7 @@ export default function Home() {
         {followers.map(follower => (
           <li key={follower.login}>
             <div>
-              <img src={`https://github.com/${follower.login}.png`} />
+              <img src={`https://github.com/${follower.login}.png`} width="45px" ></img>
               <p>
                 github.com/<strong>{follower.login}</strong>
               </p>
